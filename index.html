@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multimedia Interaktif: Pengenalan Database (CCD211)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons untuk visualisasi ikon yang bersih dan konsisten -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Tone.js untuk umpan balik audio halus saat interaksi/kuis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        // Palet Warna Biru Muda Segar & Modern (Soft Sky & Cerulean Tones)
+                        natural: {
+                            bg: '#F2F8FC',        // Soft Ice Blue / Latar Belakang Lembut
+                            surface: '#FFFFFF',   // Putih Bersih untuk Kartu Konten
+                            sand: '#E1EFFA',      // Biru Muda Pucat untuk Aksen Sekunder
+                            sage: '#0284C7',      // Cerulean / Sky Blue Utama (Fokus & Segar)
+                            sageDark: '#0369A1',  // Deep Sky Blue (Hover/Header)
+                            sageLight: '#E0F2FE', // Light Sky Blue (Highlight)
+                            terra: '#F59E0B',     // Warm Amber / Kuning Keemasan (Aksen Kontras & Peringatan)
+                            terraLight: '#FEF3C7',
+                            ink: '#0F172A',       // Deep Slate Navy (Kontras Tinggi untuk Teks)
+                            muted: '#475569',     // Cool Slate (Teks Sekunder)
+                            border: '#BAE6FD'     // Garis Batas Biru Muda Halus
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Kustomisasi Scrollbar Biru Muda */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F2F8FC;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #93C5FD;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0284C7;
+        }
+
+        /* Animasi Transisi Halaman */
+        .module-section {
+            animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Styling Kartu Interaktif 3D Flip / Hover */
+        .interactive-card {
+            transition: all 0.25s ease;
+        }
+        .interactive-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.14), 0 8px 10px -6px rgba(2, 132, 199, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-natural-bg text-natural-ink font-sans antialiased selection:bg-natural-sage selection:text-white flex flex-col min-h-screen">
+
+    <!-- =====================================================================
+         TOP HEADER & PROGRESS TRACKER (Instructional Scaffolding)
+         Menjaga orientasi pembelajar dan menampilkan progres belajar secara real-time.
+    ====================================================================== -->
+    <header class="sticky top-0 z-40 bg-natural-surface/95 backdrop-blur-md border-b border-natural-border shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <!-- Identitas Mata Kuliah -->
+            <div class="flex items-center gap-3">
+                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-xl text-natural-ink hover:bg-natural-sand focus:outline-none" aria-label="Buka Menu Navigasi">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+                <div class="w-10 h-10 rounded-xl bg-natural-sage text-white flex items-center justify-center shadow-sm shrink-0">
+                    <i class="ph-fill ph-database text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-md bg-natural-sageLight text-natural-sage">CCD211 • Sesi 1</span>
+                        <span class="hidden sm:inline text-xs text-natural-muted">Universitas Esa Unggul</span>
+                    </div>
+                    <h1 class="font-display font-bold text-base sm:text-lg text-natural-ink leading-tight truncate">Pengenalan Database</h1>
+                </div>
+            </div>
+
+            <!-- Indikator Progres Belajar & Kontrol Audio -->
+            <div class="flex items-center gap-3 sm:gap-5">
+                <!-- Toggle Efek Suara (Audio Feedback) -->
+                <button id="sound-toggle" class="p-2 rounded-xl border border-natural-border text-natural-muted hover:text-natural-sage hover:bg-natural-sageLight/50 transition-colors flex items-center gap-1.5 text-xs font-medium" title="Aktifkan/Matikan Efek Suara Interaksi">
+                    <i id="sound-icon" class="ph-fill ph-speaker-high text-base text-natural-sage"></i>
+                    <span class="hidden md:inline">Audio Aktif</span>
+                </button>
+
+                <!-- Progress Bar -->
+                <div class="flex flex-col items-end">
+                    <div class="flex items-center gap-2 text-xs font-semibold text-natural-ink mb-1">
+                        <span class="hidden sm:inline text-natural-muted">Progres Belajar:</span>
+                        <span id="progress-text" class="text-natural-sage">17%</span>
+                    </div>
+                    <div class="w-24 sm:w-36 h-2 bg-natural-sand rounded-full overflow-hidden">
+                        <div id="progress-bar" class="h-full bg-natural-sage rounded-full transition-all duration-500" style="width: 17%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =====================================================================
+         MAIN CONTAINER: SIDEBAR NAVIGATION + INTERACTIVE LEARNING WORKSPACE
+    ====================================================================== -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6">
+
+        <!-- SIDEBAR NAVIGASI (Alur Belajar Terstruktur - Gagné's Events) -->
+        <aside id="sidebar-nav" class="fixed inset-y-0 left-0 z-50 w-72 bg-natural-surface border-r border-natural-border p-5 transform -translate-x-full transition-transform duration-300 lg:relative lg:translate-x-0 lg:w-72 lg:rounded-2xl lg:border lg:shadow-sm lg:h-fit lg:sticky lg:top-22 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between lg:hidden mb-4 pb-3 border-b border-natural-border">
+                    <span class="font-display font-bold text-natural-ink">Alur Pembelajaran</span>
+                    <button id="close-menu-btn" class="p-1.5 rounded-lg hover:bg-natural-sand text-natural-muted">
+                        <i class="ph ph-x text-xl"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs font-bold uppercase tracking-wider text-natural-muted mb-3 px-2">Tahapan Pembelajaran</p>
+                <nav class="space-y-1.5" id="nav-list">
+                    <!-- Item Navigasi di-render dinamis oleh JS -->
+                </nav>
+            </div>
+
+            <!-- Kartu Informasi Dosen & Standar Desain -->
+            <div class="mt-8 pt-4 border-t border-natural-border">
+                <div class="bg-natural-bg rounded-xl p-3.5 border border-natural-border/60">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-natural-sage/15 text-natural-sage flex items-center justify-center font-bold text-xs">
+                            NV
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-natural-ink">Noviandi, S.Kom., M.Kom.</p>
+                            <p class="text-[11px] text-natural-muted">Penyusun Modul CCD211</p>
+                        </div>
+                    </div>
+                    <button onclick="navigateTo('design-blueprint')" class="w-full mt-1 py-1.5 px-2.5 rounded-lg bg-natural-surface border border-natural-border text-[11px] font-semibold text-natural-sage hover:bg-natural-sageLight transition-colors flex items-center justify-center gap-1.5">
+                        <i class="ph ph-blueprint"></i>
+                        <span>Dokumen Rancangan ID</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- OVERLAY MOBILE SIDEBAR -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-natural-ink/40 backdrop-blur-xs z-40 hidden lg:hidden"></div>
+
+        <!-- AREA KONTEN UTAMA -->
+        <main class="flex-1 min-w-0">
+            <div id="content-stage" class="bg-natural-surface rounded-2xl border border-natural-border shadow-sm p-5 sm:p-8 min-h-[600px] flex flex-col justify-between">
+                <!-- Konten Modul Dinamis Dimuat Di Sini -->
+                <div id="stage-body"></div>
+
+                <!-- Navigasi Bawah (Next / Prev Scaffolding) -->
+                <div id="stage-footer" class="mt-8 pt-5 border-t border-natural-border flex flex-wrap items-center justify-between gap-4">
+                    <button id="btn-prev" class="px-4 py-2.5 rounded-xl border border-natural-border text-sm font-semibold text-natural-ink hover:bg-natural-sand disabled:opacity-40 disabled:pointer-events-none transition-colors flex items-center gap-2">
+                        <i class="ph ph-arrow-left"></i>
+                        <span>Sebelumnya</span>
+                    </button>
+
+                    <div class="text-xs text-natural-muted font-medium hidden sm:block" id="step-indicator">
+                        Langkah 1 dari 6
+                    </div>
+
+                    <button id="btn-next" class="px-5 py-2.5 rounded-xl bg-natural-sage hover:bg-natural-sageDark text-white text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
+                        <span>Selanjutnya</span>
+                        <i class="ph ph-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- =====================================================================
+         CUSTOM TOAST / MESSAGE BOX (Pengganti alert() sesuai standar UI)
+    ====================================================================== -->
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none max-w-sm w-full px-4">
+        <div class="bg-natural-ink text-white rounded-xl p-4 shadow-lg flex items-start gap-3 border border-natural-muted/30">
+            <i id="toast-icon" class="ph-fill ph-check-circle text-xl text-emerald-400 shrink-0 mt-0.5"></i>
+            <div class="flex-1 text-sm">
+                <p id="toast-title" class="font-bold">Berhasil</p>
+                <p id="toast-msg" class="text-gray-300 text-xs mt-0.5">Progres Anda telah disimpan.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         JAVASCRIPT: INSTRUCTIONAL ENGINE, SIMULATIONS & STATE MANAGEMENT
+    ====================================================================== -->
+    <script>
+        // -------------------------------------------------------------------
+        // 1. AUDIO FEEDBACK ENGINE (Tone.js - Tanpa URL Eksternal)
+        // -------------------------------------------------------------------
+        let soundEnabled = true;
+        let synth = null;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!synth) {
+                    synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                    synth.volume.value = -12;
+                }
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                if (type === 'click') {
+                    synth.triggerAttackRelease("C5", "32n");
+                } else if (type === 'success') {
+                    synth.triggerAttackRelease(["C5", "E5", "G5"], "16n");
+                } else if (type === 'error') {
+                    synth.triggerAttackRelease(["A3", "Eb3"], "16n");
+                }
+            } catch (e) {
+                // Abaikan jika browser memblokir audio sebelum interaksi user
+            }
+        }
+
+        document.getElementById('sound-toggle').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            const label = document.querySelector('#sound-toggle span');
+            if (soundEnabled) {
+                icon.className = 'ph-fill ph-speaker-high text-base text-natural-sage';
+                label.textContent = 'Audio Aktif';
+                playSound('click');
+            } else {
+                icon.className = 'ph-fill ph-speaker-slash text-base text-natural-muted';
+                label.textContent = 'Audio Mati';
+            }
+        });
+
+        // -------------------------------------------------------------------
+        // 2. TOAST NOTIFICATION HELPER
+        // -------------------------------------------------------------------
+        function showToast(title, msg, type = 'success') {
+            const box = document.getElementById('toast-box');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-msg').textContent = msg;
+
+            if (type === 'success') {
+                icon.className = 'ph-fill ph-check-circle text-xl text-emerald-400 shrink-0 mt-0.5';
+            } else if (type === 'warning') {
+                icon.className = 'ph-fill ph-warning-circle text-xl text-amber-400 shrink-0 mt-0.5';
+            } else {
+                icon.className = 'ph-fill ph-info text-xl text-sky-400 shrink-0 mt-0.5';
+            }
+
+            box.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                box.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+
+        // -------------------------------------------------------------------
+        // 3. DATA KURIKULUM & KONTEN MODUL (Selaras 11 Tujuan Pembelajaran)
+        // -------------------------------------------------------------------
+        const modules = [
+            {
+                id: 'orientasi',
+                step: 1,
+                title: '1. Orientasi & Capaian',
+                subtitle: 'Peta Belajar & Tujuan',
+                icon: 'ph-compass',
+                cpmk: 'CPMK 1 & 2',
+                completed: true
+            },
+            {
+                id: 'penerapan',
+                step: 2,
+                title: '2. Database di Sekitar Kita',
+                subtitle: '8 Studi Kasus Nyata',
+                icon: 'ph-globe-hemisphere-east',
+                cpmk: 'CPMK 1 & 2',
+                completed: false
+            },
+            {
+                id: 'file-vs-db',
+                step: 3,
+                title: '3. File-Based vs Database',
+                subtitle: 'Simulasi Perbandingan',
+                icon: 'ph-folders',
+                cpmk: 'CPMK 3, 4 & 5',
+                completed: false
+            },
+            {
+                id: 'dbms-arsitektur',
+                step: 4,
+                title: '4. Konsep & Fungsi DBMS',
+                subtitle: 'DDL, DML & Komponen',
+                icon: 'ph-cpu',
+                cpmk: 'CPMK 6, 7 & 8',
+                completed: false
+            },
+            {
+                id: 'peran-evolusi',
+                step: 5,
+                title: '5. Peran SDM & Evolusi',
+                subtitle: 'Aktor, Sejarah & Pro-Kontra',
+                icon: 'ph-users-three',
+                cpmk: 'CPMK 9, 10 & 11',
+                completed: false
+            },
+            {
+                id: 'evaluasi',
+                step: 6,
+                title: '6. Uji Pemahaman & Latihan',
+                subtitle: 'Kuis Interaktif & Refleksi',
+                icon: 'ph-exam',
+                cpmk: 'Evaluasi Menyeluruh',
+                completed: false
+            }
+        ];
+
+        // Data 8 Penerapan Database Sehari-hari (Halaman 2-6 Modul)
+        const dailyApps = [
+            {
+                id: 'supermarket',
+                title: '1. Supermarket',
+                icon: 'ph-shopping-cart',
+                role: 'Barcode Scanner & Stok Otomatis',
+                desc: 'Pemindai barcode terhubung ke aplikasi database untuk mengambil harga produk, mengurangi jumlah stok secara real-time, dan memicu pemesanan ulang otomatis jika stok di bawah ambang batas.'
+            },
+            {
+                id: 'creditcard',
+                title: '2. Kartu Kredit',
+                icon: 'ph-credit-card',
+                role: 'Validasi Limit & Keamanan',
+                desc: 'Memeriksa sisa limit kredit secara otomatis, memverifikasi apakah kartu masuk daftar hilang/dicuri, mencatat detail transaksi baru, serta menyusun tagihan bulanan.'
+            },
+            {
+                id: 'travel',
+                title: '3. Travel Agent',
+                icon: 'ph-airplane-tilt',
+                role: 'Concurrency Control (Pemesanan)',
+                desc: 'Mencegah double-booking (dua agen memesan kursi terakhir pesawat secara bersamaan). Satu transaksi diloloskan, sementara agen lain langsung diberi notifikasi kursi penuh.'
+            },
+            {
+                id: 'library',
+                title: '4. Perpustakaan Lokal',
+                icon: 'ph-books',
+                role: 'Katalog Indeks & Reservasi',
+                desc: 'Memudahkan pencarian buku berdasarkan judul/penulis, mengelola pemesanan (reservasi), mengirim pengingat jatuh tempo, dan melacak sirkulasi buku via barcode.'
+            },
+            {
+                id: 'insurance',
+                title: '5. Perusahaan Asuransi',
+                icon: 'ph-shield-check',
+                role: 'Kalkulasi Risiko Multi-Database',
+                desc: 'Agen mengakses berbagai database penyedia asuransi menggunakan profil nasabah (usia, alamat, riwayat kesehatan) untuk menghitung premi dan mencari penawaran terbaik.'
+            },
+            {
+                id: 'rental',
+                title: '6. Rental DVD / Media',
+                icon: 'ph-film-strip',
+                role: 'Pelacakan Aset & Tren Historis',
+                desc: 'Menyimpan detail judul, jumlah salinan tersedia, status peminjaman anggota, hingga memprediksi tren pembelian di masa depan berdasarkan histori penyewaan.'
+            },
+            {
+                id: 'internet',
+                title: '7. E-Commerce (Internet)',
+                icon: 'ph-storefront',
+                role: 'Rekomendasi Personal & Cross-Ref',
+                desc: 'Situs seperti Amazon menautkan buku ke berbagai kategori sekaligus, mengelola keranjang & pengiriman, serta memberi rekomendasi personal berbasis riwayat belanja.'
+            },
+            {
+                id: 'campus',
+                title: '8. Sistem Akademik Kampus',
+                icon: 'ph-graduation-cap',
+                role: 'Integrasi Data Mahasiswa & Dosen',
+                desc: 'Mengelola biodata mahasiswa, pengambilan KRS, presensi perkuliahan, nilai ujian, bantuan keuangan, hingga sistem penggajian dosen dan staf.'
+            }
+        ];
+
+        // Data 6 Komponen DBMS Environment (Halaman 13 Modul)
+        const dbmsComponents = [
+            {
+                name: '1. Hardware (Perangkat Keras)',
+                icon: 'ph-hard-drives',
+                detail: 'Infrastruktur fisik tempat sistem berjalan, mulai dari PC tunggal, server jaringan, hingga media penyimpanan (storage) berkapasitas besar.'
+            },
+            {
+                name: '2. Software / DBMS',
+                icon: 'ph-app-window',
+                detail: 'Perangkat lunak pengelola basis data itu sendiri (seperti MySQL, Oracle, SQL Server, PostgreSQL) beserta sistem operasi yang mendukungnya.'
+            },
+            {
+                name: '3. Data & Metadata',
+                icon: 'ph-table',
+                detail: 'Komponen terpenting sebagai jembatan antara mesin dan manusia. Berisi data operasional sekaligus kamus data (meta-data) yang mendeskripsikan struktur data.'
+            },
+            {
+                name: '4. Sistem Operasi',
+                icon: 'ph-terminal-window',
+                detail: 'Perangkat lunak sistem yang mengatur sumber daya perangkat keras agar DBMS dan aplikasi dapat berjalan stabil dan aman.'
+            },
+            {
+                name: '5. Aplikasi Lain (Application Program)',
+                icon: 'ph-browsers',
+                detail: 'Program antarmuka (web/mobile/desktop) yang mengirimkan permintaan (query SQL) ke DBMS agar pengguna akhir mudah berinteraksi.'
+            },
+            {
+                name: '6. User (Pengguna)',
+                icon: 'ph-user-circle',
+                detail: 'Sumber daya manusia yang merancang, mengelola, memprogram, hingga menggunakan data (DBA, Designer, Developer, End-User).'
+            }
+        ];
+
+        // Data Soal Kuis Interaktif
+        const quizQuestions = [
+            {
+                q: 'Pada pendekatan File-Based System, Departemen Sales dan Departemen Contracts menyimpan data Client dan PropertyForRent di file terpisah. Masalah utama apa yang timbul akibat kondisi ini?',
+                options: [
+                    'Data menjadi terlalu aman karena terisolasi',
+                    'Duplikasi data (redundancy) yang memboroskan ruang dan memicu inkonsistensi data',
+                    'Kecepatan akses query menjadi jauh lebih cepat dibanding DBMS',
+                    'Perubahan struktur file otomatis memperbarui seluruh kode program'
+                ],
+                answer: 1,
+                explanation: 'Tepat! Dalam sistem berbasis file (Gambar 1.1 modul), setiap departemen mengelola filenya sendiri sehingga terjadi duplikasi data yang berisiko menimbulkan ketidakkonsistenan saat terjadi pembaruan.'
+            },
+            {
+                q: 'Perintah SQL manakah yang termasuk dalam kategori Data Definition Language (DDL) pada DBMS?',
+                options: [
+                    'SELECT, INSERT, dan UPDATE',
+                    'DELETE, TRUNCATE, dan CALL',
+                    'CREATE, ALTER, dan DROP',
+                    'GRANT, REVOKE, dan COMMIT'
+                ],
+                answer: 2,
+                explanation: 'Benar! DDL (Data Definition Language) digunakan untuk mendefinisikan, mengubah, dan menghapus struktur/metadata objek database (CREATE, ALTER, DROP), sedangkan INSERT/UPDATE/DELETE adalah DML.'
+            },
+            {
+                q: 'Siapakah personel dalam DBMS Environment yang bertanggung jawab menerjemahkan rancangan konseptual/logikal menjadi struktur fisik database serta mengontrol keamanan dan integritasnya?',
+                options: [
+                    'End-User',
+                    'Application Developer',
+                    'Database Administrator (DBA) & Physical Designer',
+                    'Data Entry Operator'
+                ],
+                answer: 2,
+                explanation: 'Sangat tepat! Physical Database Designer menentukan realisasi rancangan fisik, dan Database Administrator (DBA) mengimplementasikan serta menjaga keamanan dan integritas fisik database.'
+            },
+            {
+                q: 'Apa perbedaan mendasar antara Transaksional Database (OLTP) dengan Data Warehouse?',
+                options: [
+                    'Transaksional database fokus pada operasi harian (insert/update/delete), sedangkan Data Warehouse untuk analisis strategis eksekutif (OLAP)',
+                    'Transaksional database hanya menyimpan gambar, sedangkan Data Warehouse menyimpan teks',
+                    'Data Warehouse diperbarui setiap detik oleh kasir, sedangkan Transaksional database tidak pernah berubah',
+                    'Tidak ada perbedaan, keduanya adalah istilah yang sama'
+                ],
+                answer: 0,
+                explanation: 'Luar biasa! Transaksional database berorientasi pada operasional harian yang rinci, sedangkan Data Warehouse mengintegrasikan data melalui proses ETL untuk mendukung keputusan strategis.'
+            },
+            {
+                q: 'Meskipun DBMS menawarkan banyak keunggulan, organisasi perlu mempertimbangkan kekurangannya sebelum migrasi dari sistem file. Manakah yang merupakan kekurangan utama DBMS?',
+                options: [
+                    'Tidak mendukung akses multi-user secara bersamaan',
+                    'Tingkat kompleksitas tinggi, ukuran software besar, serta biaya perangkat keras dan konversi yang signifikan',
+                    'Tidak memiliki fitur pencadangan (backup) dan pemulihan (recovery)',
+                    'Selalu menyebabkan hilangnya integritas data'
+                ],
+                answer: 1,
+                explanation: 'Benar sekali! DBMS adalah perangkat lunak yang kompleks dan besar sehingga membutuhkan biaya lisensi, perangkat keras tambahan, biaya konversi, serta berdampak luas jika terjadi kegagalan sistem.'
+            }
+        ];
+
+        // State Aplikasi
+        let currentModuleId = 'orientasi';
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let quizAnswered = new Array(quizQuestions.length).fill(null);
+
+        // -------------------------------------------------------------------
+        // 4. NAVIGASI & PROGRESS MANAGEMENT
+        // -------------------------------------------------------------------
+        function renderSidebar() {
+            const navList = document.getElementById('nav-list');
+            navList.innerHTML = modules.map(m => {
+                const isActive = m.id === currentModuleId;
+                return `
+                    <button onclick="navigateTo('${m.id}')"
+                        class="w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-3 group ${
+                            isActive
+                                ? 'bg-natural-sage text-white shadow-sm'
+                                : 'text-natural-ink hover:bg-natural-sand/70'
+                        }">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                            isActive
+                                ? 'bg-white/20 text-white'
+                                : m.completed
+                                    ? 'bg-natural-sageLight text-natural-sage'
+                                    : 'bg-natural-sand text-natural-muted group-hover:text-natural-ink'
+                        }">
+                            <i class="${m.completed && !isActive ? 'ph-fill ph-check-circle' : 'ph ' + m.icon} text-lg"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold truncate">${m.title}</p>
+                            <p class="text-[11px] truncate ${isActive ? 'text-white/80' : 'text-natural-muted'}">${m.subtitle}</p>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const completedCount = modules.filter(m => m.completed).length;
+            const pct = Math.round((completedCount / modules.length) * 100);
+            document.getElementById('progress-text').textContent = `${pct}%`;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+        }
+
+        function navigateTo(moduleId) {
+            playSound('click');
+            currentModuleId = moduleId;
+
+            // Tandai modul saat ini sebagai dikunjungi/selesai
+            const modIndex = modules.findIndex(m => m.id === moduleId);
+            if (modIndex !== -1) {
+                modules[modIndex].completed = true;
+            }
+
+            // Tutup mobile drawer jika terbuka
+            document.getElementById('sidebar-nav').classList.add('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
+
+            renderSidebar();
+            renderStage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mobile Drawer Handlers
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar-nav').classList.remove('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.remove('hidden');
+        });
+        document.getElementById('close-menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar-nav').classList.add('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
+        });
+        document.getElementById('sidebar-overlay').addEventListener('click', () => {
+            document.getElementById('sidebar-nav').classList.add('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
+        });
+
+        // Prev & Next Footer Buttons
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            const idx = modules.findIndex(m => m.id === currentModuleId);
+            if (idx > 0) navigateTo(modules[idx - 1].id);
+        });
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            const idx = modules.findIndex(m => m.id === currentModuleId);
+            if (idx < modules.length - 1) {
+                navigateTo(modules[idx + 1].id);
+            } else {
+                navigateTo('orientasi');
+            }
+        });
+
+        // -------------------------------------------------------------------
+        // 5. RENDERING KONTEN SETIAP TAHAP PEMBELAJARAN
+        // -------------------------------------------------------------------
+        function renderStage() {
+            const body = document.getElementById('stage-body');
+            const footer = document.getElementById('stage-footer');
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const stepInd = document.getElementById('step-indicator');
+
+            const idx = modules.findIndex(m => m.id === currentModuleId);
+
+            if (idx !== -1) {
+                footer.classList.remove('hidden');
+                btnPrev.disabled = idx === 0;
+                stepInd.textContent = `Tahap ${idx + 1} dari ${modules.length} • Target: ${modules[idx].cpmk}`;
+                btnNext.innerHTML = idx === modules.length - 1
+                    ? `<span>Ulangi dari Awal</span><i class="ph ph-arrow-counter-clockwise"></i>`
+                    : `<span>Lanjut Materi</span><i class="ph ph-arrow-right"></i>`;
+            } else {
+                // Halaman khusus Blueprint Desain Pembelajaran
+                footer.classList.add('hidden');
+            }
+
+            switch (currentModuleId) {
+                case 'orientasi':
+                    body.innerHTML = getOrientasiHTML();
+                    break;
+                case 'penerapan':
+                    body.innerHTML = getPenerapanHTML();
+                    selectDailyApp('supermarket');
+                    break;
+                case 'file-vs-db':
+                    body.innerHTML = getFileVsDbHTML();
+                    break;
+                case 'dbms-arsitektur':
+                    body.innerHTML = getDbmsArsitekturHTML();
+                    selectComponent(0);
+                    break;
+                case 'peran-evolusi':
+                    body.innerHTML = getPeranEvolusiHTML();
+                    break;
+                case 'evaluasi':
+                    body.innerHTML = getEvaluasiHTML();
+                    renderQuizQuestion();
+                    break;
+                case 'design-blueprint':
+                    body.innerHTML = getDesignBlueprintHTML();
+                    break;
+            }
+        }
+
+        // ===================================================================
+        // HALAMAN 1: ORIENTASI & 11 CAPAIAN PEMBELAJARAN (Gagné Event 1 & 2)
+        // ===================================================================
+        function getOrientasiHTML() {
+            const goals = [
+                "Menjelaskan pentingnya sistem database dalam organisasi modern",
+                "Menyebutkan berbagai contoh penggunaan database secara umum",
+                "Menjelaskan karakteristik tradisional file-based system",
+                "Mengidentifikasi permasalahan pada pendekatan file-based",
+                "Menjelaskan definisi data, informasi, metadata, dan database",
+                "Menjelaskan definisi Database Management System (DBMS)",
+                "Menyebutkan jenis fasilitas & fungsi DBMS (DDL dan DML)",
+                "Menjelaskan komponen utama dalam DBMS Environment",
+                "Menjelaskan peran personel yang terlibat dalam DBMS Environment",
+                "Menjelaskan sejarah perkembangan dan generasi DBMS",
+                "Mengevaluasi keuntungan dan kekurangan penggunaan DBMS"
+            ];
+
+            return `
+                <div class="module-section">
+                    <!-- Hero Banner Natural -->
+                    <div class="rounded-2xl bg-gradient-to-br from-natural-sage to-natural-sageDark text-white p-6 sm:p-8 mb-8 relative overflow-hidden">
+                        <div class="relative z-10 max-w-2xl">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-xs font-semibold mb-3">
+                                <i class="ph-fill ph-sparkle"></i> Modul Pembelajaran Interaktif • Sesi 1
+                            </span>
+                            <h2 class="font-display font-extrabold text-2xl sm:text-3xl mb-3 leading-tight">
+                                Pengenalan Basis Data & Manajemen Sistem Informasi
+                            </h2>
+                            <p class="text-white/90 text-sm sm:text-base leading-relaxed mb-5">
+                                Selamat datang di sesi perdana mata kuliah <strong>CCD211 Basis Data</strong>. Media interaktif ini dirancang untuk membantu Anda memahami mengapa dunia digital modern bergantung pada database serta bagaimana arsitektur DBMS bekerja.
+                            </p>
+                            <div class="flex flex-wrap gap-3">
+                                <button onclick="navigateTo('penerapan')" class="px-5 py-2.5 rounded-xl bg-white text-natural-sageDark font-bold text-sm hover:bg-natural-sand transition-colors flex items-center gap-2 shadow-sm">
+                                    <span>Mulai Eksplorasi Materi</span>
+                                    <i class="ph-bold ph-play"></i>
+                                </button>
+                                <button onclick="navigateTo('design-blueprint')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition-colors flex items-center gap-2">
+                                    <i class="ph ph-blueprint"></i>
+                                    <span>Standar Desain Pembelajaran</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Dekorasi Geometris Halus -->
+                        <i class="ph-duotone ph-database text-[180px] text-white/10 absolute -right-6 -bottom-8 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Pemantik Kognitif (Gagné Event 1: Gain Attention) -->
+                    <div class="bg-natural-terraLight/60 border border-natural-terra/25 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-start gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-natural-terra text-white flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-lightbulb text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-natural-ink text-base mb-1">Pertanyaan Pemantik (Studi Kasus Singkat)</h3>
+                            <p class="text-sm text-natural-muted leading-relaxed">
+                                Bayangkan dua orang penumpang memesan <strong>1 kursi terakhir</strong> penerbangan Jakarta–Bali pada detik yang sama melalui dua agen perjalanan berbeda. Bagaimana sistem komputer mencegah kedua penumpang mendapatkan tiket untuk kursi yang sama? Jawabannya ada pada konsep <strong>DBMS</strong> yang akan Anda pelajari hari ini!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Daftar 11 Capaian Pembelajaran (Gagné Event 2: Inform Learners of Objectives) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-display font-bold text-lg text-natural-ink">11 Capaian Pembelajaran (Sub-CPMK)</h3>
+                                <p class="text-xs text-natural-muted">Seluruh aktivitas interaktif pada modul ini dipetakan untuk mencapai kompetensi berikut:</p>
+                            </div>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-natural-sand text-natural-ink">11 Target</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${goals.map((goal, i) => `
+                                <div class="p-3.5 rounded-xl bg-natural-bg border border-natural-border/80 flex items-start gap-3">
+                                    <span class="w-6 h-6 rounded-full bg-natural-sage text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                                        ${i + 1}
+                                    </span>
+                                    <p class="text-xs sm:text-sm text-natural-ink font-medium leading-snug">${goal}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===================================================================
+        // HALAMAN 2: PENERAPAN DATABASE SEHARI-HARI (Eksplorasi 8 Kasus)
+        // ===================================================================
+        function getPenerapanHTML() {
+            return `
+                <div class="module-section">
+                    <div class="mb-6">
+                        <span class="text-xs font-bold uppercase tracking-wider text-natural-sage">Bagian A • Pentingnya Database</span>
+                        <h2 class="font-display font-bold text-2xl text-natural-ink mt-1">Database dalam Kehidupan Sehari-hari</h2>
+                        <p class="text-sm text-natural-muted mt-1">
+                            Klik salah satu dari <strong>8 skenario aktivitas harian</strong> di bawah ini untuk melihat bagaimana database bekerja di balik layar.
+                        </p>
+                    </div>
+
+                    <!-- Grid 8 Kartu Interaktif -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" id="daily-apps-grid">
+                        ${dailyApps.map(app => `
+                            <button onclick="selectDailyApp('${app.id}')" id="app-btn-${app.id}"
+                                class="daily-app-btn p-3.5 rounded-xl border border-natural-border bg-natural-bg hover:border-natural-sage text-left transition-all flex flex-col gap-2">
+                                <div class="w-9 h-9 rounded-lg bg-natural-surface border border-natural-border flex items-center justify-center text-natural-sage">
+                                    <i class="ph-fill ${app.icon} text-xl"></i>
+                                </div>
+                                <span class="text-xs sm:text-sm font-bold text-natural-ink leading-tight">${app.title}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <!-- Panel Detail Studi Kasus Terpilih -->
+                    <div id="daily-app-detail" class="rounded-2xl bg-natural-sageLight/60 border border-natural-sage/30 p-5 sm:p-6 transition-all">
+                        <!-- Diisi oleh selectDailyApp() -->
+                    </div>
+
+                    <!-- Konsep Kunci: Data vs Informasi vs Metadata -->
+                    <div class="mt-8 pt-6 border-t border-natural-border">
+                        <h3 class="font-display font-bold text-lg text-natural-ink mb-3">Memahami Hierarki Dasar: Data, Informasi & Metadata</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="p-4 rounded-xl bg-natural-bg border border-natural-border">
+                                <div class="flex items-center gap-2 text-natural-sage font-bold text-sm mb-1.5">
+                                    <i class="ph-fill ph-rows"></i>
+                                    <span>1. Data (Fakta Mentah)</span>
+                                </div>
+                                <p class="text-xs text-natural-muted leading-relaxed">
+                                    Fakta tercatat tentang objek (Mahasiswa: NPM, Nama) atau kejadian (Presensi: Tgl, Jam). Terbagi menjadi <strong>Structured</strong> (teks, angka, tanggal) dan <strong>Unstructured</strong> (gambar, video, dokumen).
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-natural-bg border border-natural-border">
+                                <div class="flex items-center gap-2 text-natural-sage font-bold text-sm mb-1.5">
+                                    <i class="ph-fill ph-chart-line-up"></i>
+                                    <span>2. Informasi</span>
+                                </div>
+                                <p class="text-xs text-natural-muted leading-relaxed">
+                                    Data yang telah diproses, diorganisir, dan diberi konteks sehingga meningkatkan pengetahuan bagi penggunanya untuk mengambil keputusan.
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-natural-bg border border-natural-border">
+                                <div class="flex items-center gap-2 text-natural-sage font-bold text-sm mb-1.5">
+                                    <i class="ph-fill ph-tag"></i>
+                                    <span>3. Metadata (Kamus Data)</span>
+                                </div>
+                                <p class="text-xs text-natural-muted leading-relaxed">
+                                    <em>"Data tentang data"</em> — menggambarkan tipe data, struktur tabel, dan batasan (constraint) data yang disimpan di dalam katalog database DBMS.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectDailyApp(id) {
+            playSound('click');
+            const app = dailyApps.find(a => a.id === id);
+            if (!app) return;
+
+            document.querySelectorAll('.daily-app-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-natural-sage', 'bg-natural-surface', 'border-natural-sage');
+                btn.classList.add('bg-natural-bg');
+            });
+
+            const activeBtn = document.getElementById(`app-btn-${id}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-natural-bg');
+                activeBtn.classList.add('ring-2', 'ring-natural-sage', 'bg-natural-surface', 'border-natural-sage');
+            }
+
+            const detailBox = document.getElementById('daily-app-detail');
+            detailBox.innerHTML = `
+                <div class="flex flex-col sm:flex-row items-start gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-natural-sage text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <i class="ph-fill ${app.icon} text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <h4 class="font-display font-bold text-lg text-natural-ink">${app.title}</h4>
+                            <span class="px-2.5 py-0.5 rounded-full bg-natural-surface text-natural-sage text-xs font-semibold border border-natural-sage/20">
+                                Fokus: ${app.role}
+                            </span>
+                        </div>
+                        <p class="text-sm text-natural-ink/90 leading-relaxed">${app.desc}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===================================================================
+        // HALAMAN 3: SIMULASI FILE-BASED VS DATABASE (Gambar 1.1 Modul)
+        // ===================================================================
+        function getFileVsDbHTML() {
+            return `
+                <div class="module-section">
+                    <div class="mb-6">
+                        <span class="text-xs font-bold uppercase tracking-wider text-natural-sage">Bagian B & C • Evolusi Pengelolaan Data</span>
+                        <h2 class="font-display font-bold text-2xl text-natural-ink mt-1">Simulasi: File-Based System vs Database Approach</h2>
+                        <p class="text-sm text-natural-muted mt-1">
+                            Bandingkan kasus <strong>DreamHome Property (Sales vs Contracts)</strong> dari modul untuk memahami mengapa pendekatan file tradisional bermasalah.
+                        </p>
+                    </div>
+
+                    <!-- Switcher Mode Simulasi -->
+                    <div class="bg-natural-sand/70 p-1.5 rounded-xl inline-flex flex-wrap gap-1 mb-6">
+                        <button onclick="switchSimMode('file')" id="sim-tab-file" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-natural-surface text-natural-terra shadow-xs transition-all flex items-center gap-2">
+                            <i class="ph-fill ph-warning-octagon"></i>
+                            <span>1. Pendekatan File-Based (Bermasalah)</span>
+                        </button>
+                        <button onclick="switchSimMode('db')" id="sim-tab-db" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-natural-muted hover:text-natural-ink transition-all flex items-center gap-2">
+                            <i class="ph-fill ph-check-circle"></i>
+                            <span>2. Pendekatan Database (Terintegrasi)</span>
+                        </button>
+                    </div>
+
+                    <!-- Area Visualisasi Simulasi Interaktif -->
+                    <div id="sim-workspace" class="rounded-2xl border border-natural-border bg-natural-bg p-5 mb-6">
+                        <!-- Konten default: File-Based -->
+                    </div>
+
+                    <!-- 5 Keterbatasan Pendekatan File-Based (Accordion / Cards) -->
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-natural-ink mb-3">5 Keterbatasan Utama Sistem Berbasis File</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div class="p-4 rounded-xl bg-natural-surface border border-natural-border">
+                                <span class="text-xs font-bold text-natural-terra">01. Pemisahan & Isolasi Data</span>
+                                <p class="text-xs text-natural-muted mt-1 leading-relaxed">Data tersebar di file terpisah milik tiap departemen. Sulit menggabungkan data lintas file (misal mencari rumah sesuai kriteria klien).</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-natural-surface border border-natural-border">
+                                <span class="text-xs font-bold text-natural-terra">02. Duplikasi Data (Redundancy)</span>
+                                <p class="text-xs text-natural-muted mt-1 leading-relaxed">Data yang sama (misal alamat klien) diinput berulang kali. Memboroskan penyimpanan dan menyebabkan <strong>inkonsistensi data</strong>.</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-natural-surface border border-natural-border">
+                                <span class="text-xs font-bold text-natural-terra">03. Ketergantungan Data</span>
+                                <p class="text-xs text-natural-muted mt-1 leading-relaxed">Struktur fisik file tertanam di dalam kode program. Jika format data diubah, seluruh kode aplikasi harus ditulis ulang.</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-natural-surface border border-natural-border">
+                                <span class="text-xs font-bold text-natural-terra">04. Format File Tidak Kompatibel</span>
+                                <p class="text-xs text-natural-muted mt-1 leading-relaxed">Program ditulis dalam bahasa pemrograman berbeda (COBOL, C, dll) sehingga format filenya tidak saling mengenali.</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-natural-surface border border-natural-border sm:col-span-2 lg:col-span-2">
+                                <span class="text-xs font-bold text-natural-terra">05. Query Tetap / Proliferasi Program Aplikasi</span>
+                                <p class="text-xs text-natural-muted mt-1 leading-relaxed">Sistem file hanya melayani laporan baku yang sudah diprogram sebelumnya. Setiap kali manajemen meminta laporan/query baru, programmer harus membuat program baru dari awal.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Inisialisasi simulasi setelah HTML masuk DOM
+        const originalRenderStage = renderStage;
+        renderStage = function() {
+            originalRenderStage();
+            if (currentModuleId === 'file-vs-db') {
+                switchSimMode('file');
+            }
+        };
+
+        let clientAddress = "Jl. Merpati No. 10, Jakarta";
+
+        function switchSimMode(mode) {
+            playSound('click');
+            const tabFile = document.getElementById('sim-tab-file');
+            const tabDb = document.getElementById('sim-tab-db');
+            const workspace = document.getElementById('sim-workspace');
+            if (!workspace) return;
+
+            if (mode === 'file') {
+                tabFile.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-natural-surface text-natural-terra shadow-xs transition-all flex items-center gap-2';
+                tabDb.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-natural-muted hover:text-natural-ink transition-all flex items-center gap-2';
+
+                workspace.innerHTML = `
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 pb-4 border-b border-natural-border">
+                        <div>
+                            <h4 class="font-bold text-sm text-natural-ink">Simulasi Anomali Update (Coba Ubah Alamat Klien di Dept. Sales!)</h4>
+                            <p class="text-xs text-natural-muted">Perhatikan apa yang terjadi pada file milik Dept. Contracts ketika Sales mengubah data.</p>
+                        </div>
+                        <button onclick="simulateFileUpdate()" class="px-3.5 py-2 rounded-xl bg-natural-terra text-white text-xs font-bold hover:opacity-90 transition-opacity shrink-0 flex items-center gap-1.5">
+                            <i class="ph-bold ph-pencil-simple"></i>
+                            <span>Ubah Alamat di Sales</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Jalur Sales -->
+                        <div class="p-4 rounded-xl bg-natural-surface border border-natural-border">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Departemen Sales</span>
+                                <span class="text-[11px] font-mono text-natural-muted">Sales_Files.dat</span>
+                            </div>
+                            <p class="text-xs text-natural-muted mb-2">Program Sales mengelola filenya sendiri:</p>
+                            <div class="p-3 rounded-lg bg-natural-bg font-mono text-xs border border-natural-border">
+                                <p class="font-bold text-natural-ink">Client (clientNo: C01)</p>
+                                <p class="text-natural-sage mt-1" id="sales-addr-val">Alamat: ${clientAddress}</p>
+                            </div>
+                        </div>
+
+                        <!-- Jalur Contracts -->
+                        <div class="p-4 rounded-xl bg-natural-surface border border-natural-border">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Departemen Contracts</span>
+                                <span class="text-[11px] font-mono text-natural-muted">Contracts_Files.dat</span>
+                            </div>
+                            <p class="text-xs text-natural-muted mb-2">Program Contracts menyimpan salinan terpisah:</p>
+                            <div class="p-3 rounded-lg bg-natural-bg font-mono text-xs border border-natural-border">
+                                <p class="font-bold text-natural-ink">Client (clientNo: C01)</p>
+                                <p class="text-natural-ink mt-1" id="contracts-addr-val">Alamat: Jl. Merpati No. 10, Jakarta</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="sim-feedback-banner" class="mt-4 hidden p-3 rounded-xl bg-natural-terraLight border border-natural-terra/30 text-xs text-natural-ink flex items-center gap-2">
+                        <i class="ph-fill ph-warning text-natural-terra text-lg shrink-0"></i>
+                        <span><strong>Terjadi Inkonsistensi Data!</strong> Alamat di file Sales sudah berubah menjadi <em>Jl. Anggrek No. 88, Bandung</em>, tetapi di file Contracts masih alamat lama karena tidak terhubung!</span>
+                    </div>
+                `;
+            } else {
+                tabDb.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-natural-surface text-natural-sage shadow-xs transition-all flex items-center gap-2';
+                tabFile.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-natural-muted hover:text-natural-ink transition-all flex items-center gap-2';
+
+                workspace.innerHTML = `
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 pb-4 border-b border-natural-border">
+                        <div>
+                            <h4 class="font-bold text-sm text-natural-ink">Arsitektur Terpusat dengan DBMS</h4>
+                            <p class="text-xs text-natural-muted">Sales dan Contracts mengakses satu sumber data logis yang dikontrol oleh DBMS.</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-natural-sageLight text-natural-sage text-xs font-bold">
+                            Single Source of Truth
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="grid grid-cols-2 gap-4 w-full max-w-lg">
+                            <div class="p-3 rounded-xl bg-natural-surface border border-natural-border text-center">
+                                <i class="ph-fill ph-desktop text-xl text-natural-sage"></i>
+                                <p class="text-xs font-bold mt-1">Aplikasi Sales</p>
+                            </div>
+                            <div class="p-3 rounded-xl bg-natural-surface border border-natural-border text-center">
+                                <i class="ph-fill ph-desktop text-xl text-natural-sage"></i>
+                                <p class="text-xs font-bold mt-1">Aplikasi Contracts</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-8 text-natural-sage text-xs font-bold">
+                            <span>↕ SQL Query</span>
+                            <span>↕ SQL Query</span>
+                        </div>
+
+                        <div class="w-full max-w-lg p-3.5 rounded-xl bg-natural-sage text-white text-center shadow-sm">
+                            <p class="font-display font-bold text-sm">DBMS (MySQL / Oracle / PostgreSQL)</p>
+                            <p class="text-[11px] text-white/80">Mengatur Keamanan, Konkurensi & Integritas Data</p>
+                        </div>
+
+                        <i class="ph-bold ph-arrows-down-up text-natural-sage"></i>
+
+                        <div class="w-full max-w-lg p-4 rounded-xl bg-natural-surface border-2 border-natural-sage text-center">
+                            <p class="text-xs font-bold text-natural-sage uppercase">Centralized Database</p>
+                            <p class="text-xs font-mono text-natural-ink mt-1">Tabel: PropertyForRent | PrivateOwner | Client | Lease</p>
+                            <p class="text-[11px] text-natural-muted mt-1">Satu kali pembaruan alamat klien langsung akurat untuk seluruh departemen!</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function simulateFileUpdate() {
+            playSound('error');
+            const newAddr = "Jl. Anggrek No. 88, Bandung";
+            const salesEl = document.getElementById('sales-addr-val');
+            const banner = document.getElementById('sim-feedback-banner');
+            if (salesEl) {
+                salesEl.textContent = `Alamat: ${newAddr}`;
+                salesEl.classList.add('font-bold', 'text-natural-terra');
+            }
+            if (banner) {
+                banner.classList.remove('hidden');
+            }
+            showToast('Anomali Terdeteksi', 'Data Sales berubah, namun data Contracts tetap usang.', 'warning');
+        }
+
+        // ===================================================================
+        // HALAMAN 4: KONSEP & FUNGSI DBMS (DDL, DML, JENIS DB & 6 KOMPONEN)
+        // ===================================================================
+        function getDbmsArsitekturHTML() {
+            return `
+                <div class="module-section">
+                    <div class="mb-6">
+                        <span class="text-xs font-bold uppercase tracking-wider text-natural-sage">Bagian D & E • Arsitektur & Fasilitas DBMS</span>
+                        <h2 class="font-display font-bold text-2xl text-natural-ink mt-1">Database Management System (DBMS)</h2>
+                        <p class="text-sm text-natural-muted mt-1">
+                            DBMS adalah perangkat lunak serba guna yang memfasilitasi proses mendefinisikan, membangun, memanipulasi, dan berbagi database di antara berbagai pengguna.
+                        </p>
+                    </div>
+
+                    <!-- Klasifikasi Database: Transaksional vs Data Warehouse -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="p-5 rounded-2xl bg-natural-bg border border-natural-border">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <span class="w-8 h-8 rounded-lg bg-natural-sage text-white flex items-center justify-center">
+                                    <i class="ph-bold ph-arrows-clockwise"></i>
+                                </span>
+                                <h3 class="font-display font-bold text-base text-natural-ink">Transaksional Database (OLTP)</h3>
+                            </div>
+                            <ul class="text-xs text-natural-muted space-y-1.5 list-disc pl-4">
+                                <li><strong>Fokus:</strong> Kebutuhan operasional harian (<em>insert, update, delete</em>).</li>
+                                <li><strong>Karakteristik:</strong> Data rinci kejadian saat ini, terus diperbarui (<em>continuously updated</em>), ukuran transaksi kecil.</li>
+                                <li><strong>Contoh:</strong> Sistem kasir POS, perbankan harian, pengisian KRS.</li>
+                            </ul>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-natural-bg border border-natural-border">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <span class="w-8 h-8 rounded-lg bg-natural-terra text-white flex items-center justify-center">
+                                    <i class="ph-bold ph-chart-pie-slice"></i>
+                                </span>
+                                <h3 class="font-display font-bold text-base text-natural-ink">Data Warehouse (OLAP)</h3>
+                            </div>
+                            <ul class="text-xs text-natural-muted space-y-1.5 list-disc pl-4">
+                                <li><strong>Fokus:</strong> Mendukung eksekutif mengambil keputusan strategis & data mining.</li>
+                                <li><strong>Proses ETL:</strong> <em>Extract</em> dari berbagai sumber, <em>Transform</em> (data cleansing), dan <em>Load</em> ke warehouse.</li>
+                                <li><strong>Jenis DB Lain:</strong> Tradisional (teks/angka), Multimedia (video/audio), & GIS (peta geografis).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Fasilitas Utama DBMS: DDL vs DML Interaktif -->
+                    <div class="mb-8">
+                        <h3 class="font-display font-bold text-lg text-natural-ink mb-3">Fasilitas Bahasa SQL dalam DBMS: DDL vs DML</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="rounded-2xl border border-natural-sage/40 bg-natural-sageLight/40 p-5">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-display font-bold text-natural-sageDark text-base">1. DDL (Data Definition Language)</span>
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-natural-sage text-white">Struktur & Metadata</span>
+                                </div>
+                                <p class="text-xs text-natural-ink/80 mb-3">
+                                    Digunakan untuk membuat (<code>CREATE</code>), mengubah (<code>ALTER</code>), dan menghapus (<code>DROP</code>) struktur objek database.
+                                </p>
+                                <div class="bg-natural-surface rounded-xl p-3 border border-natural-border text-xs">
+                                    <p class="font-bold text-natural-ink mb-1">7 Objek Database pada MySQL:</p>
+                                    <div class="flex flex-wrap gap-1.5 font-mono text-[11px]">
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">Database</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">Table</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">View</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">Index</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">Procedure</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">Function</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">Trigger</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rounded-2xl border border-natural-terra/40 bg-natural-terraLight/40 p-5">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-display font-bold text-natural-ink text-base">2. DML (Data Manipulation Language)</span>
+                                    <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-natural-terra text-white">Isi / Rekaman Data</span>
+                                </div>
+                                <p class="text-xs text-natural-ink/80 mb-3">
+                                    Digunakan untuk mengolah isi data di dalam tabel (menambah, membaca, mengubah, menghapus) tanpa mengubah struktur tipe data.
+                                </p>
+                                <div class="bg-natural-surface rounded-xl p-3 border border-natural-border text-xs">
+                                    <p class="font-bold text-natural-ink mb-1">Perintah Utama DML:</p>
+                                    <div class="flex flex-wrap gap-1.5 font-mono text-[11px]">
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">SELECT</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">INSERT</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">UPDATE</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">DELETE</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">REPLACE</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">TRUNCATE</span>
+                                        <span class="px-2 py-0.5 rounded bg-natural-sand">CALL / DO</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eksplorasi 6 Elemen DBMS Environment -->
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-natural-ink mb-1">6 Elemen dalam Database System Environment</h3>
+                        <p class="text-xs text-natural-muted mb-3">Klik setiap elemen di bawah untuk memahami perannya dalam ekosistem database:</p>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-3">
+                            ${dbmsComponents.map((comp, idx) => `
+                                <button onclick="selectComponent(${idx})" id="comp-btn-${idx}"
+                                    class="comp-btn p-3 rounded-xl border border-natural-border bg-natural-bg text-left text-xs font-bold text-natural-ink hover:border-natural-sage transition-all flex items-center gap-2">
+                                    <i class="ph-fill ${comp.icon} text-lg text-natural-sage shrink-0"></i>
+                                    <span class="truncate">${comp.name}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <div id="comp-detail-box" class="p-4 rounded-xl bg-natural-surface border border-natural-sage/40 text-sm text-natural-ink">
+                            <!-- Diisi oleh selectComponent() -->
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectComponent(idx) {
+            playSound('click');
+            const comp = dbmsComponents[idx];
+            if (!comp) return;
+
+            document.querySelectorAll('.comp-btn').forEach(btn => {
+                btn.classList.remove('bg-natural-sage', 'text-white', 'border-natural-sage');
+                btn.classList.add('bg-natural-bg', 'text-natural-ink');
+                const icon = btn.querySelector('i');
+                if (icon) icon.classList.replace('text-white', 'text-natural-sage');
+            });
+
+            const activeBtn = document.getElementById(`comp-btn-${idx}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-natural-bg', 'text-natural-ink');
+                activeBtn.classList.add('bg-natural-sage', 'text-white', 'border-natural-sage');
+                const icon = activeBtn.querySelector('i');
+                if (icon) icon.classList.replace('text-natural-sage', 'text-white');
+            }
+
+            const box = document.getElementById('comp-detail-box');
+            if (box) {
+                box.innerHTML = `
+                    <p class="font-bold text-natural-sage mb-1">${comp.name}</p>
+                    <p class="text-xs sm:text-sm text-natural-muted leading-relaxed">${comp.detail}</p>
+                `;
+            }
+        }
+
+        // ===================================================================
+        // HALAMAN 5: PERAN SDM, EVOLUSI GENERASI & KELEBIHAN/KEKURANGAN
+        // ===================================================================
+        function getPeranEvolusiHTML() {
+            return `
+                <div class="module-section">
+                    <div class="mb-6">
+                        <span class="text-xs font-bold uppercase tracking-wider text-natural-sage">Bagian F, G & H • Tata Kelola & Evaluasi</span>
+                        <h2 class="font-display font-bold text-2xl text-natural-ink mt-1">Peran SDM, Evolusi DBMS & Analisis Pro-Kontra</h2>
+                        <p class="text-sm text-natural-muted mt-1">
+                            Keberhasilan sistem database bergantung pada kolaborasi berbagai peran manusia serta pemahaman atas manfaat dan tantangan implementasinya.
+                        </p>
+                    </div>
+
+                    <!-- 4 Peran Utama dalam Pengelolaan Database -->
+                    <div class="mb-8">
+                        <h3 class="font-display font-bold text-lg text-natural-ink mb-3">4 Kelompok Peran dalam DBMS Environment</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-4 rounded-2xl bg-natural-bg border border-natural-border">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-9 h-9 rounded-xl bg-natural-sage text-white flex items-center justify-center">
+                                        <i class="ph-fill ph-shield-star text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-natural-ink">1. Data & Database Administrator</h4>
+                                        <span class="text-[11px] text-natural-sage font-semibold">DA & DBA</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-natural-muted leading-relaxed">
+                                    <strong>Data Administrator (DA)</strong> mengelola sumber data pada proses operasional. <strong>Database Administrator (DBA)</strong> mengimplementasikan rancangan fisik database serta mengontrol keamanan, hak akses, dan integritas database.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-natural-bg border border-natural-border">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-9 h-9 rounded-xl bg-natural-sage text-white flex items-center justify-center">
+                                        <i class="ph-fill ph-pencil-ruler text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-natural-ink">2. Database Designer</h4>
+                                        <span class="text-[11px] text-natural-sage font-semibold">Logical & Physical</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-natural-muted leading-relaxed">
+                                    <strong>Logical Designer:</strong> Merancang konsep, mengidentifikasi entitas, relasi, dan <em>integrity constraint</em>. <strong>Physical Designer:</strong> Menerjemahkan rancangan logikal menjadi struktur tabel fisik yang optimal.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-natural-bg border border-natural-border">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-9 h-9 rounded-xl bg-natural-sage text-white flex items-center justify-center">
+                                        <i class="ph-fill ph-code text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-natural-ink">3. Application Developer</h4>
+                                        <span class="text-[11px] text-natural-sage font-semibold">Programmers</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-natural-muted leading-relaxed">
+                                    Membangun program aplikasi (antarmuka pengguna) yang mengirimkan perintah SQL ke DBMS sehingga pengguna akhir dapat mengakses data dengan mudah.
+                                </p>
+                            </div>
+
+                            <div class="p-4 rounded-2xl bg-natural-bg border border-natural-border">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div class="w-9 h-9 rounded-xl bg-natural-sage text-white flex items-center justify-center">
+                                        <i class="ph-fill ph-user text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-natural-ink">4. End-User (Pengguna Akhir)</h4>
+                                        <span class="text-[11px] text-natural-sage font-semibold">Klien / Karyawan</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-natural-muted leading-relaxed">
+                                    Pengguna akhir yang memanfaatkan aplikasi untuk menginput transaksi atau melihat laporan informasi (misal: mahasiswa, kasir, manajer perusahaan).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Singkat Evolusi Generasi DBMS (Menjawab Latihan No. 3 Modul) -->
+                    <div class="mb-8 p-5 rounded-2xl bg-natural-sand/40 border border-natural-border">
+                        <h3 class="font-display font-bold text-base text-natural-ink mb-3 flex items-center gap-2">
+                            <i class="ph-fill ph-clock-counter-clockwise text-natural-sage text-xl"></i>
+                            <span>Evolusi Pengembangan DBMS (3 Generasi Utama)</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                            <div class="p-3.5 rounded-xl bg-natural-surface border border-natural-border">
+                                <span class="font-bold text-natural-sage">Generasi 1 (1960-an)</span>
+                                <p class="font-bold text-natural-ink mt-0.5">Hierarchical & Network DBMS</p>
+                                <p class="text-natural-muted mt-1">Struktur pohon (IBM IMS) dan jaringan (CODASYL). Cepat untuk relasi tetap, tetapi navigasi kaku dan rumit.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-natural-surface border border-natural-border">
+                                <span class="font-bold text-natural-sage">Generasi 2 (1970-1980-an)</span>
+                                <p class="font-bold text-natural-ink mt-0.5">Relational DBMS (RDBMS)</p>
+                                <p class="text-natural-muted mt-1">Dipelopori E.F. Codd. Data disimpan dalam tabel relasional dengan bahasa standar SQL (Oracle, MySQL, SQL Server).</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-natural-surface border border-natural-border">
+                                <span class="font-bold text-natural-sage">Generasi 3 (1990-an – Kini)</span>
+                                <p class="font-bold text-natural-ink mt-0.5">Object-Relational & NoSQL/Cloud</p>
+                                <p class="text-natural-muted mt-1">Mendukung data kompleks (multimedia, spasial, JSON), Big Data, dan komputasi awan terdistribusi.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Perbandingan Kelebihan vs Kekurangan DBMS (Halaman 15 Modul) -->
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-natural-ink mb-3">Kelebihan vs Kekurangan Penggunaan DBMS</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- 14 Kelebihan -->
+                            <div class="p-5 rounded-2xl bg-natural-sageLight/50 border border-natural-sage/30">
+                                <h4 class="font-bold text-sm text-natural-sageDark mb-2.5 flex items-center gap-2">
+                                    <i class="ph-fill ph-thumbs-up text-lg"></i>
+                                    <span>14 Kelebihan Utama DBMS</span>
+                                </h4>
+                                <ul class="text-xs text-natural-ink space-y-1.5 grid grid-cols-1 sm:grid-cols-2 gap-x-3">
+                                    <li>• Kontrol redundansi data</li>
+                                    <li>• Konsistensi data terjaga</li>
+                                    <li>• Informasi lebih kaya dari data sama</li>
+                                    <li>• Berbagi data (multi-user)</li>
+                                    <li>• Integritas data ditingkatkan</li>
+                                    <li>• Keamanan akses lebih baik</li>
+                                    <li>• Penegakan standar organisasi</li>
+                                    <li>• Skala ekonomi (efisiensi)</li>
+                                    <li>• Penyeimbang kebutuhan konflik</li>
+                                    <li>• Aksesibilitas & daya tanggap</li>
+                                    <li>• Peningkatan produktivitas</li>
+                                    <li>• Pemeliharaan (independensi data)</li>
+                                    <li>• Peningkatan konkurensi</li>
+                                    <li>• Layanan backup & recovery</li>
+                                </ul>
+                            </div>
+
+                            <!-- 7 Kekurangan -->
+                            <div class="p-5 rounded-2xl bg-natural-terraLight/50 border border-natural-terra/30">
+                                <h4 class="font-bold text-sm text-natural-terra mb-2.5 flex items-center gap-2">
+                                    <i class="ph-fill ph-warning-diamond text-lg"></i>
+                                    <span>7 Kekurangan & Tantangan DBMS</span>
+                                </h4>
+                                <ul class="text-xs text-natural-ink space-y-2">
+                                    <li><strong>1. Kompleksitas:</strong> Perangkat lunak sangat rumit sehingga menuntut keahlian tinggi dari desainer dan DBA.</li>
+                                    <li><strong>2. Ukuran:</strong> Membutuhkan ruang penyimpanan disk dan memori (RAM) yang besar.</li>
+                                    <li><strong>3. Biaya DBMS:</strong> Lisensi DBMS komersial tingkat enterprise cukup mahal.</li>
+                                    <li><strong>4. Biaya Perangkat Keras Tambahan:</strong> Sering kali memerlukan upgrade server.</li>
+                                    <li><strong>5. Biaya Konversi:</strong> Migrasi dari sistem file lama ke database membutuhkan waktu & pelatihan staf.</li>
+                                    <li><strong>6. Performa:</strong> Karena bersifat umum (general-purpose), beberapa proses bisa lebih lambat dibanding aplikasi khusus.</li>
+                                    <li><strong>7. Dampak Kegagalan Lebih Besar:</strong> Sentralisasi membuat seluruh operasi berhenti jika server DBMS down.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===================================================================
+        // HALAMAN 6: EVALUASI FORMATIF & REFLEKSI (Gagné Event 7, 8 & 9)
+        // ===================================================================
+        function getEvaluasiHTML() {
+            return `
+                <div class="module-section">
+                    <div class="mb-6">
+                        <span class="text-xs font-bold uppercase tracking-wider text-natural-sage">Evaluasi Formatif • Pengukuran Capaian</span>
+                        <h2 class="font-display font-bold text-2xl text-natural-ink mt-1">Uji Pemahaman Konsep Dasar Database</h2>
+                        <p class="text-sm text-natural-muted mt-1">
+                            Jawab 5 soal studi kasus berikut untuk menguji penguasaan Anda terhadap seluruh materi Sesi 1.
+                        </p>
+                    </div>
+
+                    <!-- Container Kuis Interaktif -->
+                    <div id="quiz-container" class="rounded-2xl bg-natural-bg border border-natural-border p-5 sm:p-6">
+                        <!-- Diisi oleh renderQuizQuestion() -->
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuizQuestion() {
+            const container = document.getElementById('quiz-container');
+            if (!container) return;
+
+            const qObj = quizQuestions[currentQuizIndex];
+            const userChoice = quizAnswered[currentQuizIndex];
+
+            container.innerHTML = `
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-natural-border">
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-natural-sage text-white">
+                        Pertanyaan ${currentQuizIndex + 1} dari ${quizQuestions.length}
+                    </span>
+                    <span class="text-xs font-bold text-natural-muted">
+                        Skor Sementara: <span class="text-natural-sage">${quizScore} / ${quizQuestions.length}</span>
+                    </span>
+                </div>
+
+                <h3 class="font-display font-bold text-base sm:text-lg text-natural-ink mb-5 leading-snug">
+                    ${qObj.q}
+                </h3>
+
+                <div class="space-y-2.5 mb-5">
+                    ${qObj.options.map((opt, i) => {
+                        let btnStyle = 'bg-natural-surface border-natural-border hover:border-natural-sage text-natural-ink';
+                        let badgeStyle = 'bg-natural-sand text-natural-ink';
+
+                        if (userChoice !== null) {
+                            if (i === qObj.answer) {
+                                btnStyle = 'bg-natural-sageLight border-natural-sage text-natural-sageDark font-semibold';
+                                badgeStyle = 'bg-natural-sage text-white';
+                            } else if (i === userChoice && userChoice !== qObj.answer) {
+                                btnStyle = 'bg-natural-terraLight border-natural-terra text-natural-ink';
+                                badgeStyle = 'bg-natural-terra text-white';
+                            } else {
+                                btnStyle = 'bg-natural-surface/60 border-natural-border text-natural-muted opacity-70';
+                            }
+                        }
+
+                        return `
+                            <button onclick="submitQuizAnswer(${i})" ${userChoice !== null ? 'disabled' : ''}
+                                class="w-full text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 ${btnStyle}">
+                                <span class="w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 ${badgeStyle}">
+                                    ${String.fromCharCode(65 + i)}
+                                </span>
+                                <span class="text-xs sm:text-sm leading-relaxed">${opt}</span>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Umpan Balik Pedagogis Langsung (Immediate Explanatory Feedback) -->
+                ${userChoice !== null ? `
+                    <div class="p-4 rounded-xl mb-5 border ${userChoice === qObj.answer ? 'bg-natural-sageLight/70 border-natural-sage/40' : 'bg-natural-terraLight/70 border-natural-terra/40'}">
+                        <p class="text-xs font-bold mb-1 ${userChoice === qObj.answer ? 'text-natural-sageDark' : 'text-natural-terra'}">
+                            ${userChoice === qObj.answer ? '✓ Jawaban Benar!' : '✕ Kurang Tepat'}
+                        </p>
+                        <p class="text-xs sm:text-sm text-natural-ink leading-relaxed">${qObj.explanation}</p>
+                    </div>
+                ` : ''}
+
+                <!-- Navigasi Antar Soal -->
+                <div class="flex items-center justify-between pt-3 border-t border-natural-border">
+                    <button onclick="changeQuizQuestion(-1)" ${currentQuizIndex === 0 ? 'disabled' : ''}
+                        class="px-3.5 py-2 rounded-lg border border-natural-border bg-natural-surface text-xs font-bold text-natural-ink disabled:opacity-40">
+                        ← Soal Sebelumnya
+                    </button>
+
+                    ${currentQuizIndex < quizQuestions.length - 1 ? `
+                        <button onclick="changeQuizQuestion(1)"
+                            class="px-4 py-2 rounded-lg bg-natural-sage text-white text-xs font-bold hover:bg-natural-sageDark">
+                            Soal Berikutnya →
+                        </button>
+                    ` : `
+                        <button onclick="resetQuiz()"
+                            class="px-4 py-2 rounded-lg bg-natural-terra text-white text-xs font-bold hover:opacity-90">
+                            Ulangi Kuis
+                        </button>
+                    `}
+                </div>
+            `;
+        }
+
+        function submitQuizAnswer(selectedIndex) {
+            if (quizAnswered[currentQuizIndex] !== null) return;
+
+            quizAnswered[currentQuizIndex] = selectedIndex;
+            const isCorrect = selectedIndex === quizQuestions[currentQuizIndex].answer;
+
+            if (isCorrect) {
+                quizScore++;
+                playSound('success');
+                showToast('Jawaban Tepat!', 'Pemahaman konsep Anda sangat baik.', 'success');
+            } else {
+                playSound('error');
+                showToast('Periksa Penjelasan', 'Silakan baca pembahasan di bawah opsi jawaban.', 'warning');
+            }
+
+            renderQuizQuestion();
+        }
+
+        function changeQuizQuestion(delta) {
+            playSound('click');
+            const nextIdx = currentQuizIndex + delta;
+            if (nextIdx >= 0 && nextIdx < quizQuestions.length) {
+                currentQuizIndex = nextIdx;
+                renderQuizQuestion();
+            }
+        }
+
+        function resetQuiz() {
+            playSound('click');
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizAnswered = new Array(quizQuestions.length).fill(null);
+            renderQuizQuestion();
+            showToast('Kuis Direset', 'Silakan kerjakan kembali kuis evaluasi.', 'info');
+        }
+
+        // ===================================================================
+        // HALAMAN KHUSUS: DOKUMEN RANCANGAN PEMBELAJARAN (INSTRUCTIONAL DESIGN)
+        // ===================================================================
+        function getDesignBlueprintHTML() {
+            return `
+                <div class="module-section">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-natural-border">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-natural-sage">Standar Instructional Designer</span>
+                            <h2 class="font-display font-bold text-2xl text-natural-ink mt-1">Blueprints & Analisis Desain Pembelajaran</h2>
+                        </div>
+                        <button onclick="navigateTo('orientasi')" class="px-4 py-2 rounded-xl bg-natural-sage text-white text-xs font-bold hover:bg-natural-sageDark flex items-center gap-1.5">
+                            <i class="ph ph-arrow-left"></i>
+                            <span>Kembali ke Modul Belajar</span>
+                        </button>
+                    </div>
+
+                    <div class="space-y-5 text-xs sm:text-sm text-natural-ink leading-relaxed">
+                        <div class="p-4 rounded-2xl bg-natural-bg border border-natural-border">
+                            <h3 class="font-display font-bold text-base text-natural-sageDark mb-2">1. Landasan Teori Desain Instruksional</h3>
+                            <ul class="space-y-2 text-natural-muted">
+                                <li><strong>• Gagné’s Nine Events of Instruction:</strong> Struktur navigasi disusun berurutan mulai dari menarik perhatian melalui studi kasus kursi pesawat (<em>Gain Attention</em>), penyampaian 11 tujuan belajar (<em>Inform Objectives</em>), penyajian materi terchunking (<em>Present Content</em>), simulasi interaktif (<em>Elicit Performance</em>), hingga kuis dengan umpan balik langsung (<em>Provide Feedback & Assess</em>).</li>
+                                <li><strong>• Mayer’s Cognitive Theory of Multimedia Learning:</strong> Menerapkan prinsip <em>Segmenting</em> (membagi modul 18 halaman menjadi 6 tahapan ringkas), <em>Signaling</em> (penandaan warna Sage/Terakota untuk konsep inti), dan <em>Coherence</em> (menghilangkan elemen dekoratif yang mengganggu fokus).</li>
+                            </ul>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-natural-bg border border-natural-border">
+                            <h3 class="font-display font-bold text-base text-natural-sageDark mb-2">2. Rasional Pemilihan Palet Warna Biru Muda & UX</h3>
+                            <p class="text-natural-muted">
+                                Menggunakan pendekatan <em>Calm Sky & High-Clarity UI</em> dengan latar belakang <strong>Soft Ice Blue (#F2F8FC)</strong>, permukaan kartu putih bersih, warna utama <strong>Cerulean Sky Blue (#0284C7)</strong> untuk menstimulasi kejernihan pikiran dan fokus belajar, serta aksen <strong>Warm Amber (#F59E0B)</strong> sebagai kontras komplementer untuk menyoroti anomali/peringatan sistem. Kontras teks dijaga memenuhi standar aksesibilitas <strong>WCAG AA/AAA</strong>.
+                            </p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-natural-bg border border-natural-border overflow-x-auto">
+                            <h3 class="font-display font-bold text-base text-natural-sageDark mb-3">3. Matriks Keselarasan Konstruktif (Constructive Alignment)</h3>
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-natural-border text-natural-ink">
+                                        <th class="py-2 pr-3">Sub-CPMK Modul</th>
+                                        <th class="py-2 px-3">Strategi Penyajian Interaktif</th>
+                                        <th class="py-2 pl-3">Asesmen Formatif</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-natural-border text-natural-muted">
+                                    <tr>
+                                        <td class="py-2.5 pr-3 font-semibold text-natural-ink">CPMK 1–2 (Pentingnya & Contoh DB)</td>
+                                        <td class="py-2.5 px-3">Eksplorasi kartu 8 kasus nyata (Supermarket s.d. Kampus)</td>
+                                        <td class="py-2.5 pl-3">Studi kasus pemantik concurrency</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2.5 pr-3 font-semibold text-natural-ink">CPMK 3–5 (File-Based vs Database)</td>
+                                        <td class="py-2.5 px-3">Simulasi anomali update Sales vs Contracts (DreamHome)</td>
+                                        <td class="py-2.5 pl-3">Kuis Soal #1 (Redundansi & Inkonsistensi)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2.5 pr-3 font-semibold text-natural-ink">CPMK 6–8 (DBMS, DDL/DML & Komponen)</td>
+                                        <td class="py-2.5 px-3">Komparasi visual OLTP vs OLAP, DDL vs DML, & 6 Elemen</td>
+                                        <td class="py-2.5 pl-3">Kuis Soal #2 & #4</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2.5 pr-3 font-semibold text-natural-ink">CPMK 9–11 (SDM, Sejarah & Pro-Kontra)</td>
+                                        <td class="py-2.5 px-3">Peta peran 4 aktor, timeline 3 generasi, matriks 14 vs 7</td>
+                                        <td class="py-2.5 pl-3">Kuis Soal #3 & #5</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Inisialisasi Awal Aplikasi saat Halaman Dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            renderSidebar();
+            renderStage();
+        });
+    </script>
+</body>
+</html>
